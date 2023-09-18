@@ -1,0 +1,3 @@
+gcc tmc.c -lm -o tmc
+./tmc | xmgrace -pipe -free
+

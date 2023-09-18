@@ -1,0 +1,97 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
+#include <fcntl.h>
+#include <termios.h>
+#include <errno.h>
+
+#define baudrate B500000
+
+int serialSetup(void)
+{
+    int usbdev;
+    struct termios options;
+
+    usbdev = open("/dev/ttyUSB0", O_RDWR | O_NOCTTY | O_NDELAY);
+
+    if (usbdev == -1)
+        perror("open_port : Unable to open:");
+
+    tcgetattr(usbdev, &options);
+
+    cfsetispeed(&options, baudrate);
+    cfsetospeed(&options, baudrate);
+
+    options.c_cflag |= (CLOCAL | CREAD);
+    options.c_lflag |= ICANON;
+
+    tcsetattr(usbdev, TCSANOW, &options);
+
+    return usbdev;
+}
+
+__attribute__((visibility("default")))
+void write_sensor_data(
+    float temperature, float humidity, float light_level, float sound_level, 
+    float gas, float distance, float pressure, float altitude, float sealevel_pressure) 
+{
+    char buffer[500];
+    int usbdev;
+    usbdev = serialSetup();
+
+    // Clear the screen and set cursor to home position.
+    sprintf(buffer, "\ec");
+    write(usbdev, buffer, strlen(buffer) + 1);
+    fsync(usbdev);
+    usleep(1000000); // 1 second delay
+
+    sprintf(buffer, "\e[31mTemperature: \e[37m%4.2f\n\r", temperature);
+    write(usbdev, buffer, strlen(buffer) + 1);
+    fsync(usbdev);
+    usleep(100000); // 0.1 second delay
+
+    sprintf(buffer, "\e[32mHumidity: \e[37m%4.2f\n\r", humidity);
+    write(usbdev, buffer, strlen(buffer) + 1);
+    fsync(usbdev);
+    usleep(100000); // 0.1 second delay
+   
+    sprintf(buffer, "\e[33mLight level: \e[37m%4.2f\n\r", light_level);
+    write(usbdev, buffer, strlen(buffer) + 1);
+    fsync(usbdev);
+    usleep(100000); // 0.1 second delay
+
+    sprintf(buffer, "\e[34mSound level: \e[37m%4.2f\n\r", sound_level);
+    write(usbdev, buffer, strlen(buffer) + 1);
+    fsync(usbdev);
+    usleep(100000); // 0.1 second delay
+
+    sprintf(buffer, "\e[35mGas: \e[37m%4.2f\n\r", gas);
+    write(usbdev, buffer, strlen(buffer) + 1);
+    fsync(usbdev);
+    usleep(100000); // 0.1 second delay
+
+    sprintf(buffer, "\e[36mDistance: \e[37m%4.2f\n\r", distance);
+    write(usbdev, buffer, strlen(buffer) + 1);
+    fsync(usbdev);
+    usleep(100000); // 0.1 second delay
+
+    sprintf(buffer, "\e[91mPressure: \e[37m%4.2f\n\r", pressure);
+    write(usbdev, buffer, strlen(buffer) + 1);
+    fsync(usbdev);
+    usleep(100000); // 0.1 second delay
+
+    sprintf(buffer, "\e[92mAltitude: \e[37m%4.2f\n\r", altitude);
+    write(usbdev, buffer, strlen(buffer) + 1);
+    fsync(usbdev);
+    usleep(100000); // 0.1 second delay
+
+    sprintf(buffer, "\e[93mSea-pressure: \e[37m%4.2f\n\r", sealevel_pressure);
+    write(usbdev, buffer, strlen(buffer) + 1);
+    fsync(usbdev);
+    usleep(100000); // 0.1 second delay
+}
+
+int main() {
+    return EXIT_SUCCESS;
+}

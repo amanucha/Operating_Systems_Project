@@ -1,0 +1,8 @@
+import serial
+
+ser = serial.Serial('/dev/ttyUSB0', 9600) # replace with the correct serial port and baud rate
+
+while True:
+    data = ser.readline().decode().strip()
+    if data:
+        print(data)
